@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 /*
  * docxtk.c
  *
@@ -19,10 +17,37 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <zip.h>
+
+char *getfileinzip(char *zipfile, char *filetofind){
+	int err = 0;
+	struct zip *z = zip_open(zipfile, 0, &err);
+	struct zip_stat st;
+	zip_stat_init(&st);
+	zip_stat(z, filetofind, 0, &st);
+	char *contents = (char *)malloc(st.size);
+	struct zip_file *f = zip_fopen(z, filetofind, 0);
+	zip_fread(f, contents, st.size);
+	zip_fclose(f);
+	zip_close(z);
+
+	return contents;
+}
 
 int main(int argc, char **argv){
 
+	if(argc != 3){
+		fprintf(stderr, "Usage: ...\n");
+		return -1;
+	}
 
-return 0;
+	char *contents;
+	contents = getfileinzip(argv[1],argv[2]);
+	printf("%s\n",contents);
+	free(contents);
+
+	return 0;
 }
 
