@@ -175,7 +175,6 @@ int main(int argc, char **argv){
 		docxfilename = (char*)malloc(strlen(outputfilename)+1);
 		memcpy(docxfilename,outputfilename,strlen(outputfilename));
 		docxfilename[strlen(outputfilename)] = 0;
-		printf("docxfilename,%s\n",docxfilename);
 	}
 
 	if(setfilename != NULL){
