@@ -27,7 +27,8 @@ char *getfileinzip(char *zipfile, char *filetofind){
 	struct zip_stat st;
 	zip_stat_init(&st);
 	zip_stat(z, filetofind, 0, &st);
-	char *contents = (char *)malloc(st.size);
+	char *contents = (char *)malloc(st.size+1);
+	contents[st.size] = 0;
 	struct zip_file *f = zip_fopen(z, filetofind, 0);
 	zip_fread(f, contents, st.size);
 	zip_fclose(f);
