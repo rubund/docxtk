@@ -65,6 +65,25 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 	zip_close(z);
 
 }
+int copy_file(char *old_filename, char  *new_filename) {
+	FILE  *ptr_old, *ptr_new;
+	int  a;
+
+	ptr_old = fopen(old_filename, "r");
+	ptr_new = fopen(new_filename, "w");
+
+	while(1) {
+		a = fgetc(ptr_old);
+		if(!feof(ptr_old))
+			fputc(a, ptr_new);
+		else
+			break;
+	}
+
+	fclose(ptr_new);
+	fclose(ptr_old);
+	return 0;
+}
 
 int parse_cmdline(int argc, char **argv){
 	int s;
@@ -147,6 +166,16 @@ int main(int argc, char **argv){
 		contents = getfileinzip(docxfilename,getfilename);
 		fprintf(outputfile,"%s",contents);
 		free(contents);
+	}
+
+	// For not editing file in place:
+	if(outputfilename != NULL && (setfilename != NULL || 0)){ 
+		copy_file(docxfilename,outputfilename);
+		free(docxfilename);
+		docxfilename = (char*)malloc(strlen(outputfilename)+1);
+		memcpy(docxfilename,outputfilename,strlen(outputfilename));
+		docxfilename[strlen(outputfilename)] = 0;
+		printf("docxfilename,%s\n",docxfilename);
 	}
 
 	if(setfilename != NULL){
