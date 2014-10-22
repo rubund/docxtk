@@ -67,7 +67,7 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 int parse_cmdline(int argc, char **argv){
 	int s;
 	opterr = 0;
-	while((s = getopt(argc, argv, "vo:g:s:")) != -1) {
+	while((s = getopt(argc, argv, "vo:g:s:rw")) != -1) {
 		switch (s) {
 			case 'v':
 				verbose = 1;
@@ -83,6 +83,14 @@ int parse_cmdline(int argc, char **argv){
 			case 's':
 				setfilename = (char*) malloc(strlen(optarg)+1);
 				snprintf(setfilename,strlen(optarg)+1,"%s",optarg);
+				break;
+			case 'r':
+				getfilename = (char*) malloc(strlen("word/document.xml")+1);
+				sprintf(getfilename,"word/document.xml");
+				break;
+			case 'w':
+				setfilename = (char*) malloc(strlen("word/document.xml")+1);
+				sprintf(setfilename,"word/document.xml");
 				break;
 			case '?':
 				if(optopt == 'o')
