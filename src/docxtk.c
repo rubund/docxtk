@@ -20,8 +20,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <unistd.h>
 #include <zip.h>
 #include <zipconf.h>
+
+char *docxfilename = NULL;
+char verbose = 0;
+char *outputfilename = NULL;
+char *getfilename = NULL;
+FILE *outputfile = NULL;
 
 char *getfileinzip(char *zipfile, char *filetofind){
 	int err = 0;
@@ -53,20 +61,65 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 
 }
 
-int main(int argc, char **argv){
-
-	if(argc != 3){
-		fprintf(stderr, "Usage: ...\n");
-		return -1;
+int parse_cmdline(int argc, char **argv){
+	int s;
+	opterr = 0;
+	while((s = getopt(argc, argv, "vo:g:")) != -1) {
+		switch (s) {
+			case 'v':
+				verbose = 1;
+				break;
+			case 'o':
+				outputfilename = (char*) malloc(strlen(optarg)+1);
+				snprintf(outputfilename,strlen(optarg)+1,"%s",optarg);
+				break;
+			case 'g':
+				getfilename = (char*) malloc(strlen(optarg)+1);
+				snprintf(getfilename,strlen(optarg)+1,"%s",optarg);
+				break;
+			case '?':
+				if(optopt == 'o')
+					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
+				else if(optopt == 'g')
+					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
+				else if(isprint(optopt)) 
+					fprintf(stderr, "Unknown option '-%c'.\n",optopt);
+				return -1;
+			default:
+				abort();
+		}
 	}
 
-	char *contents;
-	contents = getfileinzip(argv[1],argv[2]);
-	printf("%s\n",contents);
+	if(argc != (optind + 1)){
+		fprintf(stderr,"Usage: %s <arguments> input.docx\n",argv[0]);
+		return -1;
+	}
+	docxfilename = (char*) malloc(strlen(argv[optind])+1);
+	snprintf(docxfilename,strlen(argv[optind])+1,"%s",argv[optind]);
+	return 0;
+}
 
-	replacefileinzip(argv[1],argv[2],contents);
+int main(int argc, char **argv){
 
-	free(contents);
+	if(parse_cmdline(argc, argv) != 0){
+	 	return -1;
+	}
+	if(outputfile == NULL){
+		if(outputfilename != NULL)
+			outputfile = fopen(outputfilename, "w");
+		else
+			outputfile = stdout;
+	}
+
+	if(getfilename != NULL){
+		char *contents;
+		contents = getfileinzip(docxfilename,getfilename);
+		fprintf(outputfile,"%s\n",contents);
+		free(contents);
+	}
+
+	//replacefileinzip(argv[1],argv[2],contents);
+
 	return 0;
 }
 
