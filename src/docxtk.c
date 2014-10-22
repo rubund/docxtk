@@ -25,10 +25,13 @@
 #include <zip.h>
 #include <zipconf.h>
 
+#define BUF_SIZE 4096
+
 char *docxfilename = NULL;
 char verbose = 0;
 char *outputfilename = NULL;
 char *getfilename = NULL;
+char *setfilename = NULL;
 FILE *outputfile = NULL;
 
 char *getfileinzip(char *zipfile, char *filetofind){
@@ -64,7 +67,7 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 int parse_cmdline(int argc, char **argv){
 	int s;
 	opterr = 0;
-	while((s = getopt(argc, argv, "vo:g:")) != -1) {
+	while((s = getopt(argc, argv, "vo:g:s:")) != -1) {
 		switch (s) {
 			case 'v':
 				verbose = 1;
@@ -77,10 +80,16 @@ int parse_cmdline(int argc, char **argv){
 				getfilename = (char*) malloc(strlen(optarg)+1);
 				snprintf(getfilename,strlen(optarg)+1,"%s",optarg);
 				break;
+			case 's':
+				setfilename = (char*) malloc(strlen(optarg)+1);
+				snprintf(setfilename,strlen(optarg)+1,"%s",optarg);
+				break;
 			case '?':
 				if(optopt == 'o')
 					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
 				else if(optopt == 'g')
+					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
+				else if(optopt == 's')
 					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
 				else if(isprint(optopt)) 
 					fprintf(stderr, "Unknown option '-%c'.\n",optopt);
@@ -114,12 +123,41 @@ int main(int argc, char **argv){
 	if(getfilename != NULL){
 		char *contents;
 		contents = getfileinzip(docxfilename,getfilename);
-		fprintf(outputfile,"%s\n",contents);
+		fprintf(outputfile,"%s",contents);
 		free(contents);
 	}
 
-	//replacefileinzip(argv[1],argv[2],contents);
+	if(setfilename != NULL){
+		int sizecounter = 1;
+		char *tmpcontent = (char*)malloc(BUF_SIZE);
+		char *contents1 = NULL;
+		char *contents2 = NULL;
+		int totallength = 0;
+		int read;
+		while ((read = fread((void *)tmpcontent, 1, BUF_SIZE, stdin))){
+			contents2 = (char*)malloc(BUF_SIZE*sizecounter);
+			if(contents1 != NULL)
+				memcpy(((void*)contents2), ((void*)contents1), BUF_SIZE*(sizecounter-1));
+			memcpy(((void*)contents2)+(BUF_SIZE)*(sizecounter-1), ((void*)tmpcontent), BUF_SIZE);
+			if(contents1 != NULL)
+				free(contents1);
+			contents1 = (char*)malloc(BUF_SIZE*sizecounter);
+			memcpy(((void*)contents1), ((void*)contents2), BUF_SIZE*sizecounter);
+			free(contents2);
+			sizecounter++;
+			totallength += read;
+		}
+		free(tmpcontent);
+		contents2 = (char*)malloc(totallength+1);
+		memcpy(((void*)contents2), ((void*)contents1), totallength);
+		free(contents1);
+		contents2[totallength] = 0;
+		//printf("%s",contents2);
+		replacefileinzip(docxfilename,setfilename,contents2);
+		free(contents2);
+	}
 
+	fclose(outputfile);
 	return 0;
 }
 
