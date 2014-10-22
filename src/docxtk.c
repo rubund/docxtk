@@ -19,7 +19,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <zip.h>
+#include <zipconf.h>
 
 char *getfileinzip(char *zipfile, char *filetofind){
 	int err = 0;
@@ -37,6 +39,20 @@ char *getfileinzip(char *zipfile, char *filetofind){
 	return contents;
 }
 
+void replacefileinzip(char *zipfile, char *filename, char *content){
+	int err = 0;
+	struct zip *z = zip_open(zipfile, 0, &err);
+	struct zip_stat st;
+	zip_stat_init(&st);
+	zip_stat(z, filename, 0, &st);
+	zip_uint64_t findex = st.index;
+	struct zip_source *source = zip_source_buffer(z,content,strlen(content), 0);
+	zip_replace(z, findex, source);
+	//zip_source_free(source);
+	zip_close(z);
+
+}
+
 int main(int argc, char **argv){
 
 	if(argc != 3){
@@ -47,8 +63,10 @@ int main(int argc, char **argv){
 	char *contents;
 	contents = getfileinzip(argv[1],argv[2]);
 	printf("%s\n",contents);
-	free(contents);
 
+	replacefileinzip(argv[1],argv[2],contents);
+
+	free(contents);
 	return 0;
 }
 
