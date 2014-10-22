@@ -32,7 +32,9 @@ char verbose = 0;
 char *outputfilename = NULL;
 char *getfilename = NULL;
 char *setfilename = NULL;
+char *inputfilename = NULL;
 FILE *outputfile = NULL;
+FILE *inputfile = NULL;
 
 char *getfileinzip(char *zipfile, char *filetofind){
 	int err = 0;
@@ -67,7 +69,7 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 int parse_cmdline(int argc, char **argv){
 	int s;
 	opterr = 0;
-	while((s = getopt(argc, argv, "vo:g:s:rw")) != -1) {
+	while((s = getopt(argc, argv, "vo:g:s:rwi:")) != -1) {
 		switch (s) {
 			case 'v':
 				verbose = 1;
@@ -92,12 +94,18 @@ int parse_cmdline(int argc, char **argv){
 				setfilename = (char*) malloc(strlen("word/document.xml")+1);
 				sprintf(setfilename,"word/document.xml");
 				break;
+			case 'i':
+				inputfilename = (char*) malloc(strlen(optarg)+1);
+				snprintf(inputfilename,strlen(optarg)+1,"%s",optarg);
+				break;
 			case '?':
 				if(optopt == 'o')
 					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
 				else if(optopt == 'g')
 					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
 				else if(optopt == 's')
+					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
+				else if(optopt == 'i')
 					fprintf(stderr, "Option -%c requires an argument.\n",optopt);
 				else if(isprint(optopt)) 
 					fprintf(stderr, "Unknown option '-%c'.\n",optopt);
@@ -127,6 +135,12 @@ int main(int argc, char **argv){
 		else
 			outputfile = stdout;
 	}
+	if(inputfile == NULL){
+		if(inputfilename != NULL)
+			inputfile = fopen(inputfilename, "r");
+		else
+			inputfile = stdin;
+	}
 
 	if(getfilename != NULL){
 		char *contents;
@@ -142,7 +156,7 @@ int main(int argc, char **argv){
 		char *contents2 = NULL;
 		int totallength = 0;
 		int read;
-		while ((read = fread((void *)tmpcontent, 1, BUF_SIZE, stdin))){
+		while ((read = fread((void *)tmpcontent, 1, BUF_SIZE, inputfile))){
 			contents2 = (char*)malloc(BUF_SIZE*sizecounter);
 			if(contents1 != NULL)
 				memcpy(((void*)contents2), ((void*)contents1), BUF_SIZE*(sizecounter-1));
@@ -166,6 +180,7 @@ int main(int argc, char **argv){
 	}
 
 	fclose(outputfile);
+	fclose(inputfile);
 	return 0;
 }
 
