@@ -36,7 +36,8 @@ char *inputfilename = NULL;
 FILE *outputfile = NULL;
 FILE *inputfile = NULL;
 
-char *getfileinzip(char *zipfile, char *filetofind){
+char *getfileinzip(char *zipfile, char *filetofind)
+{
 	int err = 0;
 	struct zip *z = zip_open(zipfile, 0, &err);
 	struct zip_stat st;
@@ -52,7 +53,8 @@ char *getfileinzip(char *zipfile, char *filetofind){
 	return contents;
 }
 
-void replacefileinzip(char *zipfile, char *filename, char *content){
+void replacefileinzip(char *zipfile, char *filename, char *content)
+{
 	int err = 0;
 	struct zip *z = zip_open(zipfile, 0, &err);
 	struct zip_stat st;
@@ -65,7 +67,9 @@ void replacefileinzip(char *zipfile, char *filename, char *content){
 	zip_close(z);
 
 }
-int copy_file(char *old_filename, char  *new_filename) {
+
+int copy_file(char *old_filename, char  *new_filename)
+{
 	FILE  *ptr_old, *ptr_new;
 	int  a;
 
@@ -85,7 +89,8 @@ int copy_file(char *old_filename, char  *new_filename) {
 	return 0;
 }
 
-int parse_cmdline(int argc, char **argv){
+int parse_cmdline(int argc, char **argv)
+{
 	int s;
 	opterr = 0;
 	while((s = getopt(argc, argv, "vo:g:s:rwi:")) != -1) {
@@ -143,7 +148,8 @@ int parse_cmdline(int argc, char **argv){
 	return 0;
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 
 	if(parse_cmdline(argc, argv) != 0){
 	 	return -1;
